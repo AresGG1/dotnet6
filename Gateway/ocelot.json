@@ -1,0 +1,70 @@
+{
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5258"
+  },
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/aircraft",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5053
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/aircraft",
+      "UpstreamHttpMethod": [ "POST", "GET" ],
+      "FileCacheOptions": { "TtlSeconds": 15, "Region": "aircraft" }
+      
+    },
+    {
+      "DownstreamPathTemplate": "/api/aircraft/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5053
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/aircraft/{id}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "10s",
+        "PeriodTimespan": 15,
+        "Limit": 2
+      }
+    },
+    {
+      "UpstreamHttpMethod": ["GET"],
+      "UpstreamPathTemplate": "/gateway/pilot?AircraftId={id}",
+      "DownstreamPathTemplate": "/api/pilot?AircraftId={id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "localhost", "Port": 5053 }
+      ],
+      "Key": "Pilot"
+    },
+    {
+      "UpstreamHttpMethod": ["GET"],
+      "UpstreamPathTemplate": "/gateway/FlightsDestinations/aircrafts/{id}",
+      "DownstreamPathTemplate": "/api/FlightsDestinations/aircrafts/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "localhost", "Port": 5275 }
+      ],
+      "Key": "FlightDestination"
+    }
+  ],
+  "Aggregates": [
+    {
+      "UpstreamPathTemplate": "/pilots/{id}/destinations",
+      "RouteKeys": [
+        "Pilot",
+        "FlightDestination"
+      ],
+      "Aggregator": "PilotDestinationsAggregator"
+    }
+  ]
+}
